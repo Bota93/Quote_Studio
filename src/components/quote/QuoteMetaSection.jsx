@@ -6,6 +6,9 @@ function QuoteMetaSection({
   onDuplicateQuote,
   onDeleteQuote,
   onExportPdf,
+  exportError,
+  isExportingPdf,
+  storageError,
 }) {
   return (
     <div className={sectionClassName}>
@@ -37,12 +40,19 @@ function QuoteMetaSection({
           <button
             type="button"
             onClick={onExportPdf}
+            disabled={isExportingPdf}
             className="rounded-2xl bg-amber-400 px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-amber-300"
           >
-            Exportar PDF
+            {isExportingPdf ? 'Exportando...' : 'Exportar PDF'}
           </button>
         </div>
       </div>
+
+      {(storageError || exportError) && (
+        <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          {storageError || exportError}
+        </div>
+      )}
 
       <div className="mt-6 grid gap-4 md:grid-cols-3">
         <label className="block text-sm font-medium text-slate-700">

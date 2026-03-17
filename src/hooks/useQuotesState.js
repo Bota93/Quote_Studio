@@ -1,30 +1,46 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import { getQuoteTotals } from '../utils/quoteCalculations'
 import { createEmptyItem, createQuote } from '../utils/quoteFactories'
 import { loadQuotes, loadSelectedQuoteId, saveQuotes } from '../utils/quoteStorage'
+import { normalizeOptionalNumberInput } from '../utils/quoteValidation'
 
 export const useQuotesState = () => {
   const [quotes, setQuotes] = useState(loadQuotes)
   const [selectedQuoteId, setSelectedQuoteId] = useState(loadSelectedQuoteId)
-
-  useEffect(() => {
-    saveQuotes(quotes)
-  }, [quotes])
+  const [storageError, setStorageError] = useState('')
 
   const activeQuote = quotes.find((quote) => quote.id === selectedQuoteId) ?? quotes[0]
   const totals = getQuoteTotals(activeQuote)
 
-  const updateActiveQuote = (updater) => {
-    setQuotes((currentQuotes) =>
-      currentQuotes.map((quote) =>
-        quote.id === activeQuote.id ? updater(quote) : quote,
-      ),
+  const persistQuotes = (nextQuotes) => {
+    const wasSaved = saveQuotes(nextQuotes)
+    setStorageError(
+      wasSaved
+        ? ''
+        : 'No se pudieron guardar los cambios en este navegador.',
     )
   }
 
+  const updateActiveQuote = (updater) => {
+    setQuotes((currentQuotes) => {
+      const nextQuotes = currentQuotes.map((quote) =>
+        quote.id === activeQuote.id ? updater(quote) : quote,
+      )
+
+      persistQuotes(nextQuotes)
+      return nextQuotes
+    })
+  }
+
   const updateField = (field, value) => {
-    updateActiveQuote((quote) => ({ ...quote, [field]: value }))
+    updateActiveQuote((quote) => ({
+      ...quote,
+      [field]:
+        field === 'taxRate'
+          ? normalizeOptionalNumberInput(value)
+          : value,
+    }))
   }
 
   const updatePartyField = (party, field, value) => {
@@ -47,9 +63,7 @@ export const useQuotesState = () => {
               [field]:
                 field === 'description'
                   ? value
-                  : value === ''
-                    ? ''
-                    : Number(value),
+                  : normalizeOptionalNumberInput(value),
             }
           : item,
       ),
@@ -75,7 +89,11 @@ export const useQuotesState = () => {
 
   const createNewQuote = () => {
     const nextQuote = createQuote()
-    setQuotes((currentQuotes) => [nextQuote, ...currentQuotes])
+    setQuotes((currentQuotes) => {
+      const nextQuotes = [nextQuote, ...currentQuotes]
+      persistQuotes(nextQuotes)
+      return nextQuotes
+    })
     setSelectedQuoteId(nextQuote.id)
   }
 
@@ -87,7 +105,11 @@ export const useQuotesState = () => {
       items: activeQuote.items.map((item) => ({ ...item, id: uuidv4() })),
     }
 
-    setQuotes((currentQuotes) => [duplicatedQuote, ...currentQuotes])
+    setQuotes((currentQuotes) => {
+      const nextQuotes = [duplicatedQuote, ...currentQuotes]
+      persistQuotes(nextQuotes)
+      return nextQuotes
+    })
     setSelectedQuoteId(duplicatedQuote.id)
   }
 
@@ -95,13 +117,22 @@ export const useQuotesState = () => {
     if (quotes.length === 1) {
       const nextQuote = createQuote()
       setQuotes([nextQuote])
+      persistQuotes([nextQuote])
       setSelectedQuoteId(nextQuote.id)
       return
     }
 
-    setQuotes((currentQuotes) =>
-      currentQuotes.filter((quote) => quote.id !== activeQuote.id),
-    )
+    const fallbackQuoteId =
+      quotes.find((quote) => quote.id !== activeQuote.id)?.id ?? null
+
+    setQuotes((currentQuotes) => {
+      const nextQuotes = currentQuotes.filter(
+        (quote) => quote.id !== activeQuote.id,
+      )
+      persistQuotes(nextQuotes)
+      return nextQuotes
+    })
+    setSelectedQuoteId(fallbackQuoteId)
   }
 
   return {
@@ -118,5 +149,6 @@ export const useQuotesState = () => {
     createNewQuote,
     duplicateQuote,
     deleteQuote,
+    storageError,
   }
 }

@@ -1,5 +1,9 @@
 import { v4 as uuidv4 } from 'uuid'
 import { createEmptyItem, createEmptyParty, createQuote } from './quoteFactories'
+import {
+  normalizeStoredNumber,
+  sanitizeParty,
+} from './quoteValidation'
 
 export const STORAGE_KEY = 'quote-generator-storage'
 
@@ -8,21 +12,48 @@ export const sanitizeStoredQuotes = (storedQuotes) => {
     return [createQuote()]
   }
 
-  return storedQuotes.map((quote) => ({
-    ...createQuote(),
-    ...quote,
-    issuer: { ...createEmptyParty(), ...quote.issuer },
-    client: { ...createEmptyParty(), ...quote.client },
-    items:
-      Array.isArray(quote.items) && quote.items.length > 0
-        ? quote.items.map((item) => ({
-            id: item.id ?? uuidv4(),
-            description: item.description ?? '',
-            quantity: Number(item.quantity) || 0,
-            unitPrice: Number(item.unitPrice) || 0,
-          }))
-        : [createEmptyItem()],
-  }))
+  const sanitizedQuotes = storedQuotes
+    .filter((quote) => quote && typeof quote === 'object')
+    .map((quote) => {
+      const baseQuote = createQuote()
+      const sanitizedItems =
+        Array.isArray(quote.items) && quote.items.length > 0
+          ? quote.items
+              .filter((item) => item && typeof item === 'object')
+              .map((item) => ({
+                id: item.id ?? uuidv4(),
+                description:
+                  typeof item.description === 'string' ? item.description : '',
+                quantity: normalizeStoredNumber(item.quantity),
+                unitPrice: normalizeStoredNumber(item.unitPrice),
+              }))
+          : [createEmptyItem()]
+
+      return {
+        ...baseQuote,
+        ...quote,
+        quoteNumber:
+          typeof quote.quoteNumber === 'string'
+            ? quote.quoteNumber
+            : baseQuote.quoteNumber,
+        issueDate:
+          typeof quote.issueDate === 'string'
+            ? quote.issueDate
+            : baseQuote.issueDate,
+        validUntil:
+          typeof quote.validUntil === 'string' ? quote.validUntil : '',
+        notes: typeof quote.notes === 'string' ? quote.notes : baseQuote.notes,
+        issuer: { ...createEmptyParty(), ...sanitizeParty(quote.issuer) },
+        client: { ...createEmptyParty(), ...sanitizeParty(quote.client) },
+        taxRate: normalizeStoredNumber(
+          quote.taxRate,
+          baseQuote.taxRate,
+        ),
+        items: sanitizedItems.length > 0 ? sanitizedItems : [createEmptyItem()],
+      }
+    })
+
+  return sanitizedQuotes.length > 0 ? sanitizedQuotes : [createQuote()]
 }
 
 export const loadQuotes = () => {
@@ -45,5 +76,10 @@ export const loadSelectedQuoteId = () => {
 }
 
 export const saveQuotes = (quotes) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(quotes))
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(quotes))
+    return true
+  } catch {
+    return false
+  }
 }

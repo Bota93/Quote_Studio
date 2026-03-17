@@ -2,6 +2,10 @@ import { getItemTotal } from './quoteCalculations'
 import { buildPartyLines, formatCurrency } from './quoteFormatters'
 
 export const exportQuoteToPdf = async (quote, totals) => {
+  if (!quote || !Array.isArray(quote.items) || quote.items.length === 0) {
+    throw new Error('No hay datos suficientes para exportar el presupuesto.')
+  }
+
   const { jsPDF } = await import('jspdf')
   const doc = new jsPDF({ unit: 'pt', format: 'a4' })
   const pageWidth = doc.internal.pageSize.getWidth()
@@ -125,5 +129,17 @@ export const exportQuoteToPdf = async (quote, totals) => {
     writeBody(line, margin, cursorY + index * 14)
   })
 
-  doc.save(`${quote.quoteNumber || 'presupuesto'}.pdf`)
+  const safeFileName = String(quote.quoteNumber || 'presupuesto')
+    .trim()
+    .split('')
+    .map((character) => {
+      const charCode = character.charCodeAt(0)
+      const isControlCharacter = charCode >= 0 && charCode <= 31
+      const isReservedCharacter = '<>:"/\\|?*'.includes(character)
+
+      return isControlCharacter || isReservedCharacter ? '-' : character
+    })
+    .join('')
+
+  doc.save(`${safeFileName || 'presupuesto'}.pdf`)
 }

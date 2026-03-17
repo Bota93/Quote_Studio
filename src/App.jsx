@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import PartyFormSection from './components/quote/PartyFormSection'
 import QuoteHero from './components/quote/QuoteHero'
 import QuoteHistorySidebar from './components/quote/QuoteHistorySidebar'
@@ -22,9 +23,25 @@ function App() {
     createNewQuote,
     duplicateQuote,
     deleteQuote,
+    storageError,
   } = useQuotesState()
+  const [exportError, setExportError] = useState('')
+  const [isExportingPdf, setIsExportingPdf] = useState(false)
 
-  const exportToPdf = () => exportQuoteToPdf(activeQuote, totals)
+  const exportToPdf = async () => {
+    setIsExportingPdf(true)
+    setExportError('')
+
+    try {
+      await exportQuoteToPdf(activeQuote, totals)
+    } catch {
+      setExportError(
+        'No se pudo exportar el PDF. Revisa los datos del presupuesto e intentalo de nuevo.',
+      )
+    } finally {
+      setIsExportingPdf(false)
+    }
+  }
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(251,191,36,0.28),_transparent_24%),linear-gradient(180deg,_#fffdf7_0%,_#f8fafc_48%,_#eef2ff_100%)] text-slate-900">
@@ -47,6 +64,9 @@ function App() {
                 onDuplicateQuote={duplicateQuote}
                 onDeleteQuote={deleteQuote}
                 onExportPdf={exportToPdf}
+                exportError={exportError}
+                isExportingPdf={isExportingPdf}
+                storageError={storageError}
               />
 
               <div className="grid gap-6 lg:grid-cols-2">
