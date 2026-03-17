@@ -147,6 +147,23 @@ La idea es simple:
 
 En conjunto, permiten que la evolucion del proyecto sea mas consistente, justificable y preparada para escalar.
 
+## Workflow recomendado
+
+Para mantener coherencia tecnica al tocar este proyecto, el flujo recomendado es el siguiente:
+
+1. Revisar el objetivo del cambio y contrastarlo con [`AGENTS.md`](./AGENTS.md).
+2. Identificar si el trabajo es principalmente de arquitectura, hardening o refactor.
+3. Elegir la skill adecuada antes de modificar codigo:
+   `frontend-architecture-review` para estructura y responsabilidades.
+   `quality-and-hardening` para validaciones, errores, persistencia y casos borde.
+   `react-refactor-professional` para limpieza y mejora de mantenibilidad en React.
+4. Si el cambio mezcla varias dimensiones, aplicar primero arquitectura, despues robustez y por ultimo refactor.
+5. Implementar de forma incremental, evitando reescrituras amplias sin justificacion.
+6. Ejecutar comprobaciones del proyecto cuando el cambio afecte comportamiento o estructura.
+7. Actualizar documentacion cuando cambien el flujo de trabajo, las reglas de calidad o la organizacion del proyecto.
+
+Este workflow busca que cada iteracion deje el repositorio mas claro, mas robusto y mas facil de extender.
+
 ## Flujo de uso de la aplicacion
 
 1. Crea o selecciona un presupuesto desde el historial local.

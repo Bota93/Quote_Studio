@@ -33,6 +33,7 @@ All decisions must prioritize code quality, clarity and correctness over speed.
 - Separate concerns clearly (UI, logic, data)
 - Avoid tightly coupled components
 - Refactor when necessary to maintain code quality
+- Choose the appropriate local skill before making substantial changes
 
 ---
 
@@ -154,6 +155,58 @@ When generating or modifying code:
 
 ---
 
+## Local Skills Integration
+
+This repository includes local skills under `.agents/skills/`.
+
+These skills are not optional decoration. They are the preferred operating guides for recurring engineering tasks and should be used to keep decisions consistent across the project.
+
+### Available skills
+
+- `frontend-architecture-review`
+- `quality-and-hardening`
+- `react-refactor-professional`
+
+### How the agent should use them
+
+- Use `frontend-architecture-review` when evaluating or changing component boundaries, folder structure, state ownership, data flow, hooks, services, or overall frontend organization
+- Use `quality-and-hardening` when working on validation, edge cases, calculations, persistence safety, error handling, failure states, or frontend security hygiene
+- Use `react-refactor-professional` when refactoring React code to improve readability, naming, component size, extraction of hooks or utilities, and maintainability without unnecessary redesign
+
+### Skill selection rule
+
+Before substantial work, the agent should identify whether one of these skills applies.
+
+- If the task is architectural, start from `frontend-architecture-review`
+- If the task is about robustness or reliability, start from `quality-and-hardening`
+- If the task is mainly a code cleanup or structural refactor, start from `react-refactor-professional`
+- If a task spans multiple concerns, combine skills in a deliberate order instead of mixing guidance ad hoc
+
+Preferred order when multiple skills apply:
+
+1. `frontend-architecture-review`
+2. `quality-and-hardening`
+3. `react-refactor-professional`
+
+This order helps ensure that the target structure is clarified first, robustness requirements are handled second, and code cleanup follows the chosen direction.
+
+---
+
+## Agent Workflow Expectations
+
+For non-trivial changes, the agent should generally follow this workflow:
+
+1. Review the current code and determine whether a local skill applies.
+2. Frame the change in terms of architecture, robustness, or refactor goals.
+3. Prefer incremental improvements over large rewrites.
+4. Keep UI, logic, calculations, and persistence concerns clearly separated.
+5. Validate the result with the available project checks when relevant.
+6. Update documentation when the operating model, architecture, or developer workflow changes.
+
+The agent should avoid making isolated code edits that solve the immediate symptom while making the structure harder to evolve later.
+
+---
+
 ## What to Avoid
 
 - Overengineering without justification
@@ -174,6 +227,8 @@ The agent should:
 - Justify architectural decisions when needed
 - Keep consistency across the codebase
 - Avoid introducing unnecessary complexity
+- Use the repository skills as decision support for architecture, hardening, and refactoring work
+- Keep documentation aligned when agent workflow or engineering standards change
 
 ---
 
