@@ -9,6 +9,12 @@ import QuoteSummarySection from './components/quote/QuoteSummarySection'
 import { useQuotesState } from './hooks/useQuotesState'
 import { exportQuoteToPdf } from './utils/quotePdf'
 
+const previewColumnClassNameBySize = {
+  compact: 'minmax(280px,340px)',
+  default: 'minmax(320px,396px)',
+  expanded: 'minmax(360px,460px)',
+}
+
 function App() {
   const {
     quotes,
@@ -27,6 +33,7 @@ function App() {
   } = useQuotesState()
   const [exportError, setExportError] = useState('')
   const [isExportingPdf, setIsExportingPdf] = useState(false)
+  const [previewSize, setPreviewSize] = useState('default')
 
   const exportToPdf = async () => {
     setIsExportingPdf(true)
@@ -56,7 +63,12 @@ function App() {
             onCreateQuote={createNewQuote}
           />
 
-          <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
+          <div
+            className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_var(--preview-column-size)]"
+            style={{
+              '--preview-column-size': previewColumnClassNameBySize[previewSize],
+            }}
+          >
             <section className="grid gap-6">
               <QuoteMetaSection
                 quote={activeQuote}
@@ -97,7 +109,12 @@ function App() {
               />
             </section>
 
-            <QuotePreview quote={activeQuote} totals={totals} />
+            <QuotePreview
+              quote={activeQuote}
+              totals={totals}
+              previewSize={previewSize}
+              onPreviewSizeChange={setPreviewSize}
+            />
           </div>
         </section>
       </div>

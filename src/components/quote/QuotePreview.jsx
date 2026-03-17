@@ -2,17 +2,50 @@ import { getItemTotal } from '../../utils/quoteCalculations'
 import { buildPartyLines, formatCurrency } from '../../utils/quoteFormatters'
 import { sectionClassName } from './styles'
 
-function QuotePreview({ quote, totals }) {
+function QuotePreview({
+  quote,
+  totals,
+  previewSize,
+  onPreviewSizeChange,
+}) {
   const clientLines = buildPartyLines(quote.client)
+  const previewSizeOptions = [
+    ['compact', 'Compacta'],
+    ['default', 'Media'],
+    ['expanded', 'Ancha'],
+  ]
 
   return (
-    <aside className={`${sectionClassName} h-fit xl:sticky xl:top-6`}>
-      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
-        Vista previa
-      </p>
-      <h2 className="mt-2 font-['Space_Grotesk',_ui-sans-serif,_system-ui] text-2xl font-semibold">
-        Presupuesto visual
-      </h2>
+    <aside
+      className={`${sectionClassName} h-fit w-full min-w-0 xl:sticky xl:top-6 xl:justify-self-end xl:self-start`}
+    >
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
+            Vista previa
+          </p>
+          <h2 className="mt-2 font-['Space_Grotesk',_ui-sans-serif,_system-ui] text-2xl font-semibold">
+            Presupuesto visual
+          </h2>
+        </div>
+
+        <div className="inline-flex rounded-2xl border border-slate-200 bg-white p-1">
+          {previewSizeOptions.map(([value, label]) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => onPreviewSizeChange(value)}
+              className={`rounded-xl px-3 py-2 text-xs font-medium transition ${
+                previewSize === value
+                  ? 'bg-slate-950 text-white'
+                  : 'text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <div className="mt-5 overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.1)]">
         <div className="bg-slate-950 px-6 py-6 text-white">
