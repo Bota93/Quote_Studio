@@ -19,12 +19,13 @@ La referencia principal para ese enfoque esta en [`AGENTS.md`](./AGENTS.md).
 La aplicacion permite:
 
 - crear presupuestos desde el navegador
+- empezar desde un borrador vacio en lugar de datos de ejemplo
 - completar datos del emisor y del cliente
 - gestionar lineas de servicio
 - calcular subtotal, IVA y total automaticamente
 - visualizar una previa del presupuesto en tiempo real
 - exportar el documento a PDF
-- guardar presupuestos localmente con `localStorage`
+- guardar presupuestos localmente con `localStorage` en cada cambio
 
 ## Stack
 

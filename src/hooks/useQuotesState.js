@@ -2,19 +2,22 @@ import { useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import { getQuoteTotals } from '../utils/quoteCalculations'
 import { createEmptyItem, createQuote } from '../utils/quoteFactories'
-import { loadQuotes, loadSelectedQuoteId, saveQuotes } from '../utils/quoteStorage'
+import { loadQuotesState, saveQuotesState } from '../utils/quoteStorage'
 import { normalizeOptionalNumberInput } from '../utils/quoteValidation'
 
+const resolveActiveQuote = (quoteState) =>
+  quoteState.quotes.find((quote) => quote.id === quoteState.selectedQuoteId) ??
+  quoteState.quotes[0]
+
 export const useQuotesState = () => {
-  const [quotes, setQuotes] = useState(loadQuotes)
-  const [selectedQuoteId, setSelectedQuoteId] = useState(loadSelectedQuoteId)
+  const [quoteState, setQuoteState] = useState(loadQuotesState)
   const [storageError, setStorageError] = useState('')
 
-  const activeQuote = quotes.find((quote) => quote.id === selectedQuoteId) ?? quotes[0]
+  const activeQuote = resolveActiveQuote(quoteState)
   const totals = getQuoteTotals(activeQuote)
 
-  const persistQuotes = (nextQuotes) => {
-    const wasSaved = saveQuotes(nextQuotes)
+  const persistQuoteState = (nextQuoteState) => {
+    const wasSaved = saveQuotesState(nextQuoteState)
     setStorageError(
       wasSaved
         ? ''
@@ -22,14 +25,33 @@ export const useQuotesState = () => {
     )
   }
 
-  const updateActiveQuote = (updater) => {
-    setQuotes((currentQuotes) => {
-      const nextQuotes = currentQuotes.map((quote) =>
-        quote.id === activeQuote.id ? updater(quote) : quote,
-      )
+  const commitQuoteState = (updater) => {
+    setQuoteState((currentQuoteState) => {
+      const nextQuoteState = updater(currentQuoteState)
+      persistQuoteState(nextQuoteState)
+      return nextQuoteState
+    })
+  }
 
-      persistQuotes(nextQuotes)
-      return nextQuotes
+  const setSelectedQuoteId = (nextSelectedQuoteId) => {
+    commitQuoteState((currentQuoteState) => ({
+      ...currentQuoteState,
+      selectedQuoteId:
+        currentQuoteState.quotes.find((quote) => quote.id === nextSelectedQuoteId)
+          ?.id ?? currentQuoteState.selectedQuoteId,
+    }))
+  }
+
+  const updateActiveQuote = (updater) => {
+    commitQuoteState((currentQuoteState) => {
+      const currentActiveQuote = resolveActiveQuote(currentQuoteState)
+
+      return {
+        ...currentQuoteState,
+        quotes: currentQuoteState.quotes.map((quote) =>
+          quote.id === currentActiveQuote.id ? updater(quote) : quote,
+        ),
+      }
     })
   }
 
@@ -89,12 +111,11 @@ export const useQuotesState = () => {
 
   const createNewQuote = () => {
     const nextQuote = createQuote()
-    setQuotes((currentQuotes) => {
-      const nextQuotes = [nextQuote, ...currentQuotes]
-      persistQuotes(nextQuotes)
-      return nextQuotes
-    })
-    setSelectedQuoteId(nextQuote.id)
+
+    commitQuoteState((currentQuoteState) => ({
+      quotes: [nextQuote, ...currentQuoteState.quotes],
+      selectedQuoteId: nextQuote.id,
+    }))
   }
 
   const duplicateQuote = () => {
@@ -105,39 +126,37 @@ export const useQuotesState = () => {
       items: activeQuote.items.map((item) => ({ ...item, id: uuidv4() })),
     }
 
-    setQuotes((currentQuotes) => {
-      const nextQuotes = [duplicatedQuote, ...currentQuotes]
-      persistQuotes(nextQuotes)
-      return nextQuotes
-    })
-    setSelectedQuoteId(duplicatedQuote.id)
+    commitQuoteState((currentQuoteState) => ({
+      quotes: [duplicatedQuote, ...currentQuoteState.quotes],
+      selectedQuoteId: duplicatedQuote.id,
+    }))
   }
 
   const deleteQuote = () => {
-    if (quotes.length === 1) {
+    if (quoteState.quotes.length === 1) {
       const nextQuote = createQuote()
-      setQuotes([nextQuote])
-      persistQuotes([nextQuote])
-      setSelectedQuoteId(nextQuote.id)
+
+      commitQuoteState(() => ({
+        quotes: [nextQuote],
+        selectedQuoteId: nextQuote.id,
+      }))
       return
     }
 
     const fallbackQuoteId =
-      quotes.find((quote) => quote.id !== activeQuote.id)?.id ?? null
+      quoteState.quotes.find((quote) => quote.id !== activeQuote.id)?.id ?? null
 
-    setQuotes((currentQuotes) => {
-      const nextQuotes = currentQuotes.filter(
+    commitQuoteState((currentQuoteState) => ({
+      quotes: currentQuoteState.quotes.filter(
         (quote) => quote.id !== activeQuote.id,
-      )
-      persistQuotes(nextQuotes)
-      return nextQuotes
-    })
-    setSelectedQuoteId(fallbackQuoteId)
+      ),
+      selectedQuoteId: fallbackQuoteId,
+    }))
   }
 
   return {
-    quotes,
-    selectedQuoteId,
+    quotes: quoteState.quotes,
+    selectedQuoteId: quoteState.selectedQuoteId,
     setSelectedQuoteId,
     activeQuote,
     totals,

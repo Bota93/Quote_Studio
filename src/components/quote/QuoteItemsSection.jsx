@@ -48,18 +48,8 @@ function QuoteItemsSection({
               </button>
             </div>
 
-            <div className="mt-4 grid gap-4 md:grid-cols-[minmax(0,1fr)_110px_140px_140px]">
-              <label className="block text-sm font-medium text-slate-700 md:col-span-1">
-                Descripcion
-                <textarea
-                  rows="3"
-                  className={inputClassName}
-                  value={item.description}
-                  onChange={(event) =>
-                    onUpdateItem(item.id, 'description', event.target.value)
-                  }
-                />
-              </label>
+            <div className="mt-4 grid gap-4">
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-[110px_140px_140px] xl:items-end">
               <label className="block text-sm font-medium text-slate-700">
                 Cantidad
                 <input
@@ -86,14 +76,21 @@ function QuoteItemsSection({
                   }
                 />
               </label>
-              <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
-                <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
-                  Importe
-                </p>
-                <p className="mt-3 text-lg font-semibold text-slate-950">
+              <div className="mt-7 flex min-h-[50px] items-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-lg font-semibold text-slate-950">
                   {formatCurrency(getItemTotal(item))}
-                </p>
               </div>
+              </div>
+              <label className="block text-sm font-medium text-slate-700">
+                Descripcion
+                <textarea
+                  rows="3"
+                  className={inputClassName}
+                  value={item.description}
+                  onChange={(event) =>
+                    onUpdateItem(item.id, 'description', event.target.value)
+                  }
+                />
+              </label>
             </div>
           </article>
         ))}

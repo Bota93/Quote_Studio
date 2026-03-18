@@ -2,6 +2,12 @@ import { v4 as uuidv4 } from 'uuid'
 
 export const DEFAULT_TAX_RATE = 21
 
+const createQuoteNumber = () => {
+  const today = new Date().toISOString().slice(0, 10)
+
+  return `PRES-${today.replaceAll('-', '')}-${Math.floor(Math.random() * 900 + 100)}`
+}
+
 export const createEmptyParty = () => ({
   name: '',
   taxId: '',
@@ -22,27 +28,13 @@ export const createQuote = () => {
 
   return {
     id: uuidv4(),
-    quoteNumber: `PRES-${today.replaceAll('-', '')}-${Math.floor(Math.random() * 900 + 100)}`,
+    quoteNumber: createQuoteNumber(),
     issueDate: today,
     validUntil: '',
-    notes: 'Forma de pago: transferencia bancaria a 15 dias.',
-    issuer: {
-      ...createEmptyParty(),
-      name: 'Estudio Aurora',
-      taxId: 'B-12345678',
-      email: 'hola@estudioaurora.es',
-      phone: '+34 600 123 456',
-      address: 'Calle Gran Via 18, Madrid',
-    },
+    notes: '',
+    issuer: createEmptyParty(),
     client: createEmptyParty(),
     taxRate: DEFAULT_TAX_RATE,
-    items: [
-      {
-        id: uuidv4(),
-        description: 'Diseno y desarrollo de landing page',
-        quantity: 1,
-        unitPrice: 850,
-      },
-    ],
+    items: [createEmptyItem()],
   }
 }

@@ -6,6 +6,19 @@ import {
 } from './quoteValidation'
 
 export const STORAGE_KEY = 'quote-generator-storage'
+const DEFAULT_QUOTE_STATE = () => {
+  const initialQuote = createQuote()
+
+  return {
+    quotes: [initialQuote],
+    selectedQuoteId: initialQuote.id,
+  }
+}
+
+const resolveSelectedQuoteId = (quotes, selectedQuoteId) =>
+  quotes.some((quote) => quote.id === selectedQuoteId)
+    ? selectedQuoteId
+    : quotes[0]?.id ?? null
 
 export const sanitizeStoredQuotes = (storedQuotes) => {
   if (!Array.isArray(storedQuotes) || storedQuotes.length === 0) {
@@ -56,28 +69,52 @@ export const sanitizeStoredQuotes = (storedQuotes) => {
   return sanitizedQuotes.length > 0 ? sanitizedQuotes : [createQuote()]
 }
 
-export const loadQuotes = () => {
-  try {
-    const rawValue = localStorage.getItem(STORAGE_KEY)
-    return rawValue ? sanitizeStoredQuotes(JSON.parse(rawValue)) : [createQuote()]
-  } catch {
-    return [createQuote()]
+export const sanitizeStoredQuoteState = (storedState) => {
+  if (Array.isArray(storedState)) {
+    const quotes = sanitizeStoredQuotes(storedState)
+
+    return {
+      quotes,
+      selectedQuoteId: resolveSelectedQuoteId(quotes, storedState[0]?.id),
+    }
+  }
+
+  if (!storedState || typeof storedState !== 'object') {
+    return DEFAULT_QUOTE_STATE()
+  }
+
+  const quotes = sanitizeStoredQuotes(storedState.quotes)
+
+  return {
+    quotes,
+    selectedQuoteId: resolveSelectedQuoteId(quotes, storedState.selectedQuoteId),
   }
 }
 
-export const loadSelectedQuoteId = () => {
+export const loadQuotesState = () => {
+  if (typeof window === 'undefined') {
+    return DEFAULT_QUOTE_STATE()
+  }
+
   try {
     const rawValue = localStorage.getItem(STORAGE_KEY)
-    const storedQuotes = rawValue ? JSON.parse(rawValue) : null
-    return storedQuotes?.[0]?.id ?? null
+
+    return rawValue
+      ? sanitizeStoredQuoteState(JSON.parse(rawValue))
+      : DEFAULT_QUOTE_STATE()
   } catch {
-    return null
+    return DEFAULT_QUOTE_STATE()
   }
 }
 
-export const saveQuotes = (quotes) => {
+export const saveQuotesState = (quoteState) => {
+  if (typeof window === 'undefined') {
+    return false
+  }
+
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(quotes))
+    const sanitizedState = sanitizeStoredQuoteState(quoteState)
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(sanitizedState))
     return true
   } catch {
     return false
