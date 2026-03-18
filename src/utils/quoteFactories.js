@@ -2,8 +2,15 @@ import { v4 as uuidv4 } from 'uuid'
 
 export const DEFAULT_TAX_RATE = 21
 
+const getLocalDateString = () => {
+  const today = new Date()
+  const timezoneOffsetInMs = today.getTimezoneOffset() * 60 * 1000
+
+  return new Date(today.getTime() - timezoneOffsetInMs).toISOString().slice(0, 10)
+}
+
 const createQuoteNumber = () => {
-  const today = new Date().toISOString().slice(0, 10)
+  const today = getLocalDateString()
 
   return `PRES-${today.replaceAll('-', '')}-${Math.floor(Math.random() * 900 + 100)}`
 }
@@ -24,7 +31,7 @@ export const createEmptyItem = () => ({
 })
 
 export const createQuote = () => {
-  const today = new Date().toISOString().slice(0, 10)
+  const today = getLocalDateString()
 
   return {
     id: uuidv4(),

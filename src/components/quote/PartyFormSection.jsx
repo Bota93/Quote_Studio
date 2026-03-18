@@ -1,6 +1,6 @@
 import { inputClassName, sectionClassName } from './styles'
 
-function PartyFormSection({ party, partyKey, title, onUpdatePartyField }) {
+function PartyFormSection({ party, partyKey, title, onUpdatePartyField, errors }) {
   return (
     <div className={sectionClassName}>
       <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
@@ -20,6 +20,9 @@ function PartyFormSection({ party, partyKey, title, onUpdatePartyField }) {
               onUpdatePartyField(partyKey, 'name', event.target.value)
             }
           />
+          {errors?.name && (
+            <p className="mt-2 text-xs text-rose-700">{errors.name}</p>
+          )}
         </label>
         <label className="block text-sm font-medium text-slate-700">
           NIF / CIF
@@ -30,6 +33,9 @@ function PartyFormSection({ party, partyKey, title, onUpdatePartyField }) {
               onUpdatePartyField(partyKey, 'taxId', event.target.value)
             }
           />
+          {errors?.taxId && (
+            <p className="mt-2 text-xs text-rose-700">{errors.taxId}</p>
+          )}
         </label>
         <label className="block text-sm font-medium text-slate-700">
           Email
@@ -41,6 +47,9 @@ function PartyFormSection({ party, partyKey, title, onUpdatePartyField }) {
               onUpdatePartyField(partyKey, 'email', event.target.value)
             }
           />
+          {errors?.email && (
+            <p className="mt-2 text-xs text-rose-700">{errors.email}</p>
+          )}
         </label>
         <label className="block text-sm font-medium text-slate-700">
           Telefono
@@ -51,6 +60,9 @@ function PartyFormSection({ party, partyKey, title, onUpdatePartyField }) {
               onUpdatePartyField(partyKey, 'phone', event.target.value)
             }
           />
+          {errors?.phone && (
+            <p className="mt-2 text-xs text-rose-700">{errors.phone}</p>
+          )}
         </label>
         <label className="block text-sm font-medium text-slate-700">
           Direccion

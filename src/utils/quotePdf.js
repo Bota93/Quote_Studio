@@ -1,9 +1,12 @@
 import { getItemTotal } from './quoteCalculations'
+import { validateQuoteForExport } from './quoteExportValidation'
 import { buildPartyLines, formatCurrency } from './quoteFormatters'
 
 export const exportQuoteToPdf = async (quote, totals) => {
-  if (!quote || !Array.isArray(quote.items) || quote.items.length === 0) {
-    throw new Error('No hay datos suficientes para exportar el presupuesto.')
+  const validationError = validateQuoteForExport(quote)
+
+  if (validationError) {
+    throw new Error(validationError)
   }
 
   const { jsPDF } = await import('jspdf')

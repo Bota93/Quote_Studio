@@ -9,7 +9,10 @@ function QuoteMetaSection({
   exportError,
   isExportingPdf,
   storageError,
+  validationSummary,
 }) {
+  const canExport = !validationSummary.hasBlockingIssues
+
   return (
     <div className={sectionClassName}>
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -40,8 +43,8 @@ function QuoteMetaSection({
           <button
             type="button"
             onClick={onExportPdf}
-            disabled={isExportingPdf}
-            className="rounded-2xl bg-amber-400 px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-amber-300"
+            disabled={isExportingPdf || !canExport}
+            className="rounded-2xl bg-amber-400 px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isExportingPdf ? 'Exportando...' : 'Exportar PDF'}
           </button>
@@ -54,6 +57,17 @@ function QuoteMetaSection({
         </div>
       )}
 
+      {!canExport && (
+        <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+          <p className="font-medium text-slate-900">Antes de exportar</p>
+          <ul className="mt-2 grid gap-1">
+            {validationSummary.exportIssues.map((issue) => (
+              <li key={issue}>{issue}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       <div className="mt-6 grid gap-4 md:grid-cols-3">
         <label className="block text-sm font-medium text-slate-700">
           Numero
@@ -62,6 +76,11 @@ function QuoteMetaSection({
             value={quote.quoteNumber}
             onChange={(event) => onUpdateField('quoteNumber', event.target.value)}
           />
+          {validationSummary.meta.quoteNumber && (
+            <p className="mt-2 text-xs text-rose-700">
+              {validationSummary.meta.quoteNumber}
+            </p>
+          )}
         </label>
         <label className="block text-sm font-medium text-slate-700">
           Fecha de emision
@@ -71,6 +90,11 @@ function QuoteMetaSection({
             value={quote.issueDate}
             onChange={(event) => onUpdateField('issueDate', event.target.value)}
           />
+          {validationSummary.meta.issueDate && (
+            <p className="mt-2 text-xs text-rose-700">
+              {validationSummary.meta.issueDate}
+            </p>
+          )}
         </label>
         <label className="block text-sm font-medium text-slate-700">
           Valido hasta
@@ -80,6 +104,11 @@ function QuoteMetaSection({
             value={quote.validUntil}
             onChange={(event) => onUpdateField('validUntil', event.target.value)}
           />
+          {validationSummary.meta.validUntil && (
+            <p className="mt-2 text-xs text-rose-700">
+              {validationSummary.meta.validUntil}
+            </p>
+          )}
         </label>
       </div>
     </div>

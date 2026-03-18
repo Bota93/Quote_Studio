@@ -23,6 +23,7 @@ La aplicacion permite:
 - completar datos del emisor y del cliente
 - gestionar lineas de servicio
 - calcular subtotal, IVA y total automaticamente
+- validar campos clave antes de exportar
 - visualizar una previa del presupuesto en tiempo real
 - exportar el documento a PDF
 - guardar presupuestos localmente con `localStorage` en cada cambio
@@ -48,6 +49,7 @@ pnpm dev
 pnpm dev
 pnpm build
 pnpm lint
+pnpm test
 pnpm preview
 ```
 
@@ -56,12 +58,26 @@ pnpm preview
 ```text
 .
 |-- AGENTS.md
+|-- LICENSE
 |-- README.md
 |-- public/
+|   `-- favicon.svg
 |-- src/
 |   |-- App.jsx
+|   |-- components/
+|   |   `-- quote/
+|   |-- hooks/
+|   |   `-- useQuotesState.js
 |   |-- index.css
 |   |-- main.jsx
+|   |-- utils/
+|   |   |-- quoteCalculations.js
+|   |   |-- quoteExportValidation.js
+|   |   |-- quoteFactories.js
+|   |   |-- quoteFormatters.js
+|   |   |-- quotePdf.js
+|   |   |-- quoteStorage.js
+|   |   `-- quoteValidation.js
 |   `-- assets/
 `-- .agents/
     `-- skills/
@@ -190,4 +206,4 @@ Desarrollado por [@Bota93](https://github.com/Bota93)
 
 ## Licencia
 
-Este proyecto se distribuye bajo licencia MIT.
+Este proyecto se distribuye bajo licencia MIT. El texto completo esta disponible en [`LICENSE`](./LICENSE).

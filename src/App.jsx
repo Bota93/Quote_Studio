@@ -7,6 +7,8 @@ import QuoteMetaSection from './components/quote/QuoteMetaSection'
 import QuotePreview from './components/quote/QuotePreview'
 import QuoteSummarySection from './components/quote/QuoteSummarySection'
 import { useQuotesState } from './hooks/useQuotesState'
+import { validateQuoteForExport } from './utils/quoteExportValidation'
+import { getQuoteValidationSummary } from './utils/quoteValidation'
 import { exportQuoteToPdf } from './utils/quotePdf'
 
 const previewColumnClassName = 'minmax(280px,340px)'
@@ -29,8 +31,16 @@ function App() {
   } = useQuotesState()
   const [exportError, setExportError] = useState('')
   const [isExportingPdf, setIsExportingPdf] = useState(false)
+  const validationSummary = getQuoteValidationSummary(activeQuote)
 
   const exportToPdf = async () => {
+    const validationError = validateQuoteForExport(activeQuote)
+
+    if (validationError) {
+      setExportError(validationError)
+      return
+    }
+
     setIsExportingPdf(true)
     setExportError('')
 
@@ -74,6 +84,7 @@ function App() {
                 exportError={exportError}
                 isExportingPdf={isExportingPdf}
                 storageError={storageError}
+                validationSummary={validationSummary}
               />
 
               <div className="grid gap-6 lg:grid-cols-2">
@@ -87,6 +98,7 @@ function App() {
                     partyKey={partyKey}
                     title={title}
                     onUpdatePartyField={updatePartyField}
+                    errors={validationSummary[partyKey]}
                   />
                 ))}
               </div>
